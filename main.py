@@ -4,10 +4,9 @@ from game.states import Menu, Night1
 def main():
     game = BaseGame()
     states = [
-        Night1(), Menu()
+        Night1(game), Menu(game)
     ]
     for s in states:
-        s.game = game
         game.add_state(s)
     game.run()
 

@@ -52,10 +52,6 @@ class BaseGame:
             for s in self.sm.states:
                 self.add_state(s)
 
-        # start the first state
-        if self.states:
-            self.state.startup()
-
     # --- helper functions ---
     def add_state(self, state: le.State):
         state.game = self
