@@ -1,6 +1,7 @@
 from enum import Enum
 
 class States(str, Enum):
+    SPLASH_SCREEN = "Splash Screen"
     MENU = "Menu"
     PAUSE_MENU = "Pause Menu"
     NIGHT_1 = "Night 1"
@@ -12,4 +13,6 @@ class States(str, Enum):
     NIGHT_7 = "Night 7"
     NIGHT_8 = "Night 8"
     NIGHT_9 = "Night 9"
+    ENDING = "Ending"
+    CREDITS = "Credits"
     

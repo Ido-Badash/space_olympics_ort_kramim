@@ -56,6 +56,14 @@ class BaseGame:
     def add_state(self, state: le.State):
         state.game = self
         self.sm.add(state)
+        
+    def set_state_by_name(self, name: str):
+        idx = self.sm.find_state_by_name(name)
+        self.state.done = True
+        self.state.next = name
+        self.state.cleanup()
+        self.sm.set_state(idx)
+        self.state.startup()
 
     # --- actions ---
     def quit_game(self):
