@@ -2,24 +2,25 @@ import sys
 from pathlib import Path
 
 from game.utils.systems_utils import fullscreen_toggle
-
+from functools import wraps
 import glob
 import os
 from datetime import datetime
 
-from typing import List, Optional
+from typing import List, Optional, Callable
 
 import luneth_engine as le
 import pygame
 import pygame.freetype
 
 from winmode import PygameWindowController, WindowStates
-
+from luneth_engine import state_changed
 from .logger import logger
 from .trigger_handler import TriggerHandler
 
 
 class BaseGame:
+
     def __init__(
         self,
         states: Optional[List[le.State]] = None,
@@ -60,12 +61,12 @@ class BaseGame:
                 lambda events: TriggerHandler.trigger_single_key(
                     events, pygame.K_RIGHT
                 ),
-                self.sm.next_state,
+                self.create_state_change(self.sm.next_state),
             )
             self.gi.add_action(
-                "admin_switch_right",
+                "admin_switch_left",
                 lambda events: TriggerHandler.trigger_single_key(events, pygame.K_LEFT),
-                self.sm.previous_state,
+                self.create_state_change(self.sm.previous_state),
             )
 
         # screenshots
@@ -84,13 +85,30 @@ class BaseGame:
         state.game = self
         self.sm.add(state)
 
+    def create_state_change(self, func):
+        """
+        Wraps a function with the same logic as @state_changed,
+
+        but the parant method takes self.
+
+        Mostly used for GlobalInputs to add actions
+        """
+
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            self.state.cleanup()
+            self.state.done = True
+            res = func(*args, **kwargs)
+            self.state.startup()
+            return res
+
+        return wrapper
+
+    @state_changed
     def set_state_by_name(self, name: str):
         idx = self.sm.find_state_by_name(name)
-        self.state.done = True
         self.state.next = name
-        self.state.cleanup()
         self.sm.set_state(idx)
-        self.state.startup()
 
     # --- actions ---
     def quit_game(self):

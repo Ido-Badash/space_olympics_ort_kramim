@@ -16,7 +16,7 @@ class Menu(BaseState):
         pass
 
     def draw(self, screen: pygame.Surface):
-        screen.fill(Colors.PLATINUM)
+        screen.fill(Colors.KHAKI)
 
     def update(self, screen, dt):
         pass
