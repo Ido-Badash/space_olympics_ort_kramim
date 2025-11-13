@@ -4,17 +4,7 @@ from game.states import (
     Menu,
     # SplashScreen,
     # PauseMenu,
-    # Ending,
     # Credits,
-    Night1,
-    # Night2,
-    # Night3,
-    # Night4,
-    # Night5,
-    # Night6,
-    # Night7,
-    # Night8,
-    # Night9,
 )
 
 
@@ -28,17 +18,7 @@ def main():
     states = [
         # SplashScreen(game),
         Menu(game),
-        Night1(game),
-        # Night2(game),
-        # Night3(game),
-        # Night4(game),
-        # Night5(game),
-        # Night6(game),
-        # Night7(game),
-        # Night8(game),
-        # Night9(game),
         # PauseMenu(game),
-        # Ending(game),
         # Credits(game),
     ]
     
