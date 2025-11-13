@@ -1,3 +1,6 @@
+from typing import Tuple
+
+
 class Colors:
     PLATINUM = (234, 230, 229)
     KHAKI = (185, 171, 161)

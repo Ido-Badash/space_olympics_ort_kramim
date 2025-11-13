@@ -11,9 +11,12 @@ from typing import List, Optional
 
 import luneth_engine as le
 import pygame
+import pygame.freetype
+
 from winmode import PygameWindowController, WindowStates
 
 from .logger import logger
+from .trigger_handler import TriggerHandler
 
 
 class BaseGame:
@@ -41,18 +44,42 @@ class BaseGame:
         )
 
         # create global inputs
-        self.gi.add_action("fullscreen", self.trigger_f11, self.toggle_fullscreen)
-        self.gi.add_action("screenshot", self.trigger_f2, self.take_screenshot)
+        self.gi.add_action(
+            "fullscreen",
+            lambda events: TriggerHandler.trigger_single_key(events, pygame.K_F11),
+            self.toggle_fullscreen,
+        )
+        self.gi.add_action(
+            "screenshot",
+            lambda events: TriggerHandler.trigger_single_key(events, pygame.K_F2),
+            self.take_screenshot,
+        )
+        if self.ss.get("admin_state_switch", False):
+            self.gi.add_action(
+                "admin_switch_right",
+                lambda events: TriggerHandler.trigger_single_key(
+                    events, pygame.K_RIGHT
+                ),
+                self.sm.next_state,
+            )
+            self.gi.add_action(
+                "admin_switch_right",
+                lambda events: TriggerHandler.trigger_single_key(events, pygame.K_LEFT),
+                self.sm.previous_state,
+            )
 
         # screenshots
         self.screenshots_folder = Path("screenshots")
+
+        # font
+        self.font = pygame.freetype.Font(self.ss.get("game_font_path"))
 
         # add game to every state if states were provided
         if states:
             for s in self.sm.states:
                 self.add_state(s)
 
-    # --- helper functions ---
+    # --- states helper functions ---
     def add_state(self, state: le.State):
         state.game = self
         self.sm.add(state)
@@ -108,17 +135,22 @@ class BaseGame:
         for f in screenshots:
             os.remove(f)
 
-    # --- triggers ---
-    def trigger_f11(self, events):
-        return any(e.type == pygame.KEYDOWN and e.key == pygame.K_F11 for e in events)
-
-    def trigger_f2(self, events):
-        return any(e.type == pygame.KEYDOWN and e.key == pygame.K_F2 for e in events)
-
     # --- properties ---
     @property
-    def screen(self):
+    def screen(self) -> pygame.Surface:
         return self.wc.get_screen()
+
+    @property
+    def width(self) -> int:
+        return self.screen.get_width()
+
+    @property
+    def height(self) -> int:
+        return self.screen.get_height()
+
+    @property
+    def dt(self) -> float:
+        return self.tm.dt
 
     @property
     def state(self):
@@ -128,20 +160,24 @@ class BaseGame:
     def states(self):
         return self.sm.states
 
+    # --- util methods ---
+    def size_depended(self, base_ratio: float):
+        return min(self.width, self.height) / base_ratio
+
     # --- run ---
     def run(self):
         self.running = True
         try:
             self.state.startup()
             while self.running and self.state:
-                self.dt = self.clock.tick(self.ss.get("fps", 60)) / 1000.0  # seconds
-                self.tm.update(self.dt)
-
+                self._dt = self.clock.tick(self.ss.get("fps", 60)) / 1000.0  # seconds
+                self.tm.update(self._dt)
+                print(self.tm.elapsed_time)
                 # get events
                 events = pygame.event.get()
 
                 # update inputs
-                self.gi.update(events, self.dt)
+                self.gi.update(events, self.tm.dt)
 
                 # event handle
                 for event in events:
@@ -151,7 +187,7 @@ class BaseGame:
                         self.state.get_event(event)
 
                 # update + draw
-                self.state.update(self.screen, self.dt)
+                self.state.update(self.screen, self.tm.dt)
                 self.state.draw(self.screen)
 
                 # find and switch to the named state
@@ -162,7 +198,7 @@ class BaseGame:
                 pygame.display.flip()
 
         except Exception as e:
-            logger.exception(f"An unexpected error occurred in the main loop {e}")
+            logger.exception(f"An unexpected error occurred in the main loop, {e}")
 
         finally:
             self.ss.save()

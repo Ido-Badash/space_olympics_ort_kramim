@@ -2,7 +2,7 @@ from game.core import BaseGame, logger
 from game.states import (
     States,
     Menu,
-    # SplashScreen,
+    SplashScreen,
     # PauseMenu,
     # Credits,
 )
@@ -16,7 +16,7 @@ def main():
 
     # defines states
     states = [
-        # SplashScreen(game),
+        SplashScreen(game),
         Menu(game),
         # PauseMenu(game),
         # Credits(game),
@@ -27,7 +27,7 @@ def main():
         game.add_state(state)
 
     # set starting state
-    game.set_state_by_name(States.MENU)
+    game.set_state_by_name(States.SPLASH_SCREEN)
 
     # run the game loop
     try:
