@@ -13,7 +13,7 @@ def main():
 
     # create game
     game = BaseGame()
-    
+
     # defines states
     states = [
         # SplashScreen(game),
@@ -21,14 +21,14 @@ def main():
         # PauseMenu(game),
         # Credits(game),
     ]
-    
+
     # add to game all states
     for state in states:
         game.add_state(state)
-    
+
     # set starting state
     game.set_state_by_name(States.MENU)
-    
+
     # run the game loop
     try:
         game.run()

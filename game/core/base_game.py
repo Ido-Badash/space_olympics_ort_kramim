@@ -56,7 +56,7 @@ class BaseGame:
     def add_state(self, state: le.State):
         state.game = self
         self.sm.add(state)
-        
+
     def set_state_by_name(self, name: str):
         idx = self.sm.find_state_by_name(name)
         self.state.done = True
@@ -157,7 +157,7 @@ class BaseGame:
                 # find and switch to the named state
                 if self.state.done:
                     self.sm.default_switcher()
-                    
+
                 # update display
                 pygame.display.flip()
 

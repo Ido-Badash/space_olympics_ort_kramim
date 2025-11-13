@@ -2,6 +2,7 @@ import os
 import logging
 import sys
 
+
 # logging setup
 def logging_setup(file_name: str, folder_name: str = "logs"):
     # makes sure the folder exists
