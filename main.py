@@ -27,7 +27,7 @@ def main():
         game.add_state(state)
 
     # set starting state
-    game.set_state_by_name(States.SPLASH_SCREEN)
+    game.sm.set_state(States.SPLASH_SCREEN)
 
     # run the game loop
     try:

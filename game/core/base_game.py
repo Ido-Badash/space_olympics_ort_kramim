@@ -1,13 +1,11 @@
-import sys
 from pathlib import Path
 
 from game.utils.systems_utils import fullscreen_toggle
-from functools import wraps
 import glob
 import os
 from datetime import datetime
 
-from typing import List, Optional, Callable
+from typing import Tuple
 
 import luneth_engine as le
 import pygame
@@ -28,13 +26,16 @@ class BaseGame:
         self.settings_path = self.data_folder / "settings.json"
         self.ss = le.SharedSettings(json_path=self.settings_path)
         self.ss.load()
-        self.sm = le.StateManager()
+        self.sm = le.StateManager(on_state_change=self.on_state_change)
         self.tm = le.TimeManager()
         self.gi = le.GlobalInputs()
 
         # init pygame
         pygame.init()
         self.clock = pygame.time.Clock()
+
+        # time since last state
+        self.last_state_tm = le.TimeManager()
 
         # winmode controller
         self.wc = PygameWindowController(
@@ -82,13 +83,11 @@ class BaseGame:
         state.game = self
         self.sm.add(state)
 
-    @le.state_changed
-    def set_state_by_name(self, name: str):
-        idx = self.sm.find_state_by_name(name)
-        self.state.next = name
-        self.sm.set_state(idx)
-
     # --- actions ---
+    def on_state_change(self, old: le.State, new: le.State):
+        logger.info(f"Switching from [{old.name}] to [{new.name}]")
+        self.last_state_tm.reset()
+
     def quit_game(self):
         self.running = False
         logger.debug("Quit triggered")
@@ -137,6 +136,10 @@ class BaseGame:
         return self.wc.get_screen()
 
     @property
+    def size(self) -> Tuple[int, int]:
+        return self.screen.get_size()
+
+    @property
     def width(self) -> int:
         return self.screen.get_width()
 
@@ -145,16 +148,16 @@ class BaseGame:
         return self.screen.get_height()
 
     @property
-    def dt(self) -> float:
-        return self.tm.dt
-
-    @property
     def state(self):
         return self.sm.state
 
     @property
     def states(self):
         return self.sm.states
+
+    @property
+    def time_since_last_state(self):
+        return self.last_state_tm.elapsed_time
 
     # --- util methods ---
     def size_depended(self, base_ratio: float):
@@ -168,8 +171,11 @@ class BaseGame:
                 self.state.startup()
 
             while self.running and self.state:
-                self._dt = self.clock.tick(self.ss.get("fps", 60)) / 1000.0  # seconds
-                self.tm.update(self._dt)
+                self.dt = self.clock.tick(self.ss.get("fps", 60)) / 1000.0  # seconds
+
+                # time managers
+                self.tm.update(self.dt)
+                self.last_state_tm.update(self.dt)
 
                 # get events
                 events = pygame.event.get()

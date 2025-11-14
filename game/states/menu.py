@@ -1,16 +1,22 @@
 import pygame
 
 from game.core import BaseState, Colors, logger
-
+from game.ui import FadeTransition
 from .states import States
 
 
 class Menu(BaseState):
     def __init__(self, game=None):
         super().__init__(States.MENU, game)
+        self.fade_transition = FadeTransition(
+            size=(self.game.width, self.game.height),
+            starting_alpha=255,
+            ending_alpha=0,
+        )
 
     def startup(self):
         pygame.display.set_caption("Menu")
+        self.fade_transition.startup()
 
     def cleanup(self):
         pass
@@ -20,6 +26,8 @@ class Menu(BaseState):
 
     def draw(self, screen: pygame.Surface):
         screen.fill(Colors.KHAKI)
+        self.fade_transition.draw(screen)
 
     def update(self, screen, dt):
-        pass
+        self.fade_transition.set_size(self.game.size)
+        self.fade_transition.update(dt)
