@@ -38,7 +38,9 @@ class SplashScreen(BaseState):
         # text
         text_size = min(self.game.width, self.game.height) // self.base_font_ratio
         text_surf, text_rect = self.game.font.render(
-            "Splash", Colors.DARK_GREEN, size=text_size
+            self.game.ss.get("splash_screen_text", "Splash"),
+            Colors.DARK_GREEN,
+            size=text_size,
         )
         text_surf.set_alpha(self.text_transition.alpha)
         screen.blit(text_surf, mid_pos(self.game.size, text_rect))
@@ -57,4 +59,5 @@ class SplashScreen(BaseState):
 
         # switch state when both fades are done
         if self.fade_transition.is_done():
+            logger.debug("Splash screen fade animation ended.")
             self.game.sm.set_state(States.MENU)

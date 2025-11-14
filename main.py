@@ -6,9 +6,13 @@ from game.states import (
     # PauseMenu,
     # Credits,
 )
+import logging
 
 
 def main():
+    # logger config
+    logger.setLevel(logging.INFO)
+
     logger.info("=== Game - Starting ===")
 
     # create game

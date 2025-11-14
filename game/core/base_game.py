@@ -1,19 +1,19 @@
 from pathlib import Path
-
-from game.utils.systems_utils import fullscreen_toggle
 import glob
 import os
 from datetime import datetime
-
 from typing import Tuple
 
 import luneth_engine as le
+from winmode import PygameWindowController, WindowStates
+
 import pygame
 import pygame.freetype
 
-from winmode import PygameWindowController, WindowStates
+
 from .logger import logger
 from .trigger_handler import TriggerHandler
+from game.utils.systems_utils import fullscreen_toggle
 
 
 class BaseGame:
@@ -85,7 +85,7 @@ class BaseGame:
 
     # --- actions ---
     def on_state_change(self, old: le.State, new: le.State):
-        logger.info(f"Switching from [{old.name}] to [{new.name}]")
+        logger.debug(f"Switching from [{old.name}] to [{new.name}]")
         self.last_state_tm.reset()
 
     def quit_game(self):
@@ -169,7 +169,6 @@ class BaseGame:
         try:
             if self.state:
                 self.state.startup()
-
             while self.running and self.state:
                 self.dt = self.clock.tick(self.ss.get("fps", 60)) / 1000.0  # seconds
 
