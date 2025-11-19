@@ -39,7 +39,7 @@ def main():
         game.add_state(state)
 
     # set starting state
-    game.sm.set_state(States.SPLASH_SCREEN)
+    game.sm.set_state(States.LAUNCH_TOWER)
 
     # run the game loop
     try:
