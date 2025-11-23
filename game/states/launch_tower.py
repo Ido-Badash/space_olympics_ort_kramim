@@ -125,6 +125,10 @@ class LaunchTower(BaseState):
         self.clicks_count = 0
         self.start_finish = False
 
+        # play main music
+        pygame.mixer.music.load(self.game.ss.get("main_music_path"))
+        pygame.mixer.music.play(-1, fade_ms=2000)
+
     def cleanup(self):
         pass
 

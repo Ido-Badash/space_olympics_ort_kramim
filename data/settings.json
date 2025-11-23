@@ -10,6 +10,7 @@
     "rocket_flying_path": "assets/sound/sfx/rocket_flying.mp3",
     "rocket_falling_path": "assets/sound/sfx/rocket_falling.mp3",
     "win_path": "assets/sound/sfx/win.mp3",
+    "main_music_path": "assets/sound/music/Interstellar.mp3",
     "can_take_screenshots": true,
     "can_fullscreen": true,
     "can_exit_via_escape": true

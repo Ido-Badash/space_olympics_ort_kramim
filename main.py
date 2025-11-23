@@ -5,7 +5,6 @@ from game.states import (
     SplashScreen,
     # Credits,
     LaunchTower,
-    OrbitControl,
     AstroLink,
     LifeCapsule,
     SoftLanding,
@@ -27,11 +26,10 @@ def main():
 
     # defines states
     states = [
-        SplashScreen(game),
-        Menu(game),
+        SplashScreen(game, next_state=States.LAUNCH_TOWER),
+        # Menu(game),
         # Credits(game),
         LaunchTower(game),
-        OrbitControl(game),
         AstroLink(game),
         LifeCapsule(game),
         SoftLanding(game),
@@ -42,7 +40,7 @@ def main():
         game.add_state(state)
 
     # set starting state
-    game.sm.set_state(States.LAUNCH_TOWER)
+    game.sm.set_state(States.SPLASH_SCREEN)
 
     # run the game loop
     try:
