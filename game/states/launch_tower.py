@@ -54,7 +54,7 @@ class LaunchTower(BaseState):
         )
 
         # --- rockets ---
-        r_size_ratio = (0.08, 0.20)
+        r_size_ratio = (0.08, 0.18)
 
         self.rockets_list = [
             Rocket(
@@ -93,6 +93,7 @@ class LaunchTower(BaseState):
 
         self.strong_rocket = None
         self.start_finish = False
+        self._played_win_sound = False
 
         # --- next button ---
         self.next_button = Button(
@@ -124,6 +125,7 @@ class LaunchTower(BaseState):
         self.current_rocket = None
         self.clicks_count = 0
         self.start_finish = False
+        self._played_win_sound = False
 
         # play main music
         pygame.mixer.music.load(self.game.ss.get("main_music_path"))
@@ -191,6 +193,7 @@ class LaunchTower(BaseState):
         # if all rockets are done, start finish animation
         if all(rocket.done for rocket in self.rockets_list):
             self.start_finish = True
+            pygame.Sound(self.game.ss.get("win_path")).play(-1)
 
         # fade
         self.fade_transition.set_size(self.game.size)
@@ -199,7 +202,9 @@ class LaunchTower(BaseState):
     def finish_animation(self, screen: pygame.Surface):
         w, h = screen.get_size()
 
-        self.game.sound_manager.play_sound("win")
+        if not self._played_win_sound:
+            # self.game.sound_manager.play_sound("win")
+            self._played_win_sound = True
 
         # render text
         text_surf, text_rect = self.game.font.render(
