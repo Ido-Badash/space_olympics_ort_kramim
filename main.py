@@ -26,8 +26,8 @@ def main():
 
     # defines states
     states = [
-        SplashScreen(game, next_state=States.LAUNCH_TOWER),
-        # Menu(game),
+        SplashScreen(game, next_state=States.MENU),
+        Menu(game),
         # Credits(game),
         LaunchTower(game),
         AstroLink(game),

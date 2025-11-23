@@ -48,7 +48,7 @@ class LaunchTower(BaseState):
                     game_size=self.game.size,
                 ),
             ],
-            start_y_ratio=0.05,
+            start_y_ratio=0.025,
             line_spacing_ratio=0.015,
             game_size=self.game.size,
         )
@@ -193,7 +193,6 @@ class LaunchTower(BaseState):
         # if all rockets are done, start finish animation
         if all(rocket.done for rocket in self.rockets_list):
             self.start_finish = True
-            pygame.Sound(self.game.ss.get("win_path")).play(-1)
 
         # fade
         self.fade_transition.set_size(self.game.size)
@@ -202,8 +201,12 @@ class LaunchTower(BaseState):
     def finish_animation(self, screen: pygame.Surface):
         w, h = screen.get_size()
 
+        overlay = pygame.Surface(self.game.size, pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 180))
+        screen.blit(overlay, (0, 0))
+
         if not self._played_win_sound:
-            # self.game.sound_manager.play_sound("win")
+            self.game.sound_manager.play_sound("win")
             self._played_win_sound = True
 
         # render text
