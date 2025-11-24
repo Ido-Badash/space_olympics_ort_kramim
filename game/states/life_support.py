@@ -61,10 +61,10 @@ class LifeSupport(BaseState):
         self.radiation = 0.0  # 0 is safe, 100 is lethal
 
         # Decay/increase rates (per second) - made more challenging
-        self.o2_decay = 1.9
-        self.temp_decay = 1.2
-        self.water_decay = 1.5
-        self.rad_increase = 0.6
+        self.o2_decay = 2.0
+        self.temp_decay = 1.5
+        self.water_decay = 1.0
+        self.rad_increase = 0.5
 
         # --- Button cooldowns (to prevent spam) ---
         self.btn_o2_cooldown = 0.0
