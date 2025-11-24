@@ -56,6 +56,6 @@ exe = EXE(
     entitlements_file=None,
 
     # Add 'path/to/icon.ico' if you have a game icon
-    icon=None,  
+    icon='assets/icons/game_icon.ico',  
     
 )

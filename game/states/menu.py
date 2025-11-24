@@ -20,15 +20,12 @@ class Menu(BaseState):
 
         # Load background GIF
         gif_path = resource_path("assets/gifs/menu_bg_gif.gif")
-
         with open(gif_path, "rb") as f:
             gif_bytes = f.read()
-
         self.bg_gif = load_gif_from_bytes(gif_bytes)
         self.bg_frame_index = 0
         self.bg_frame_delay = 60  # ms per frame
         self.bg_frame_timer = 0
-
         self.bg_gif_surf = None
 
         # Load astronaut image
@@ -37,13 +34,11 @@ class Menu(BaseState):
         ).convert_alpha()
 
         # Astronaut state
-        self.astronaut = None
-        self.astronaut_rect = None
-        self.astronaut_x = -200  # Start off-screen left
+        self.astronaut_x = -200
         self.astronaut_y = 0
-        self.astronaut_speed = 50  # pixels per second
+        self.astronaut_speed = 50
         self.astronaut_rotation = 0.0
-        self.astronaut_rotation_speed = 30.0  # degrees per second
+        self.astronaut_rotation_speed = 30.0
         self._spawn_astronaut()
 
         # Title text
@@ -51,7 +46,7 @@ class Menu(BaseState):
             text="SPACE OLYMPICS",
             font=self.game.font,
             base_ratio=8,
-            color=(*Colors.DISK_ORANGE, 255),  # hot black hole theme
+            color=(*Colors.DISK_ORANGE, 255),
             game_size=self.game.size,
             y_ratio=0.25,
         )
@@ -61,10 +56,13 @@ class Menu(BaseState):
             text="Test Your Space Skills",
             font=self.game.font,
             base_ratio=20,
-            color=(*Colors.HOLO_YELLOW, 200),  # subtle warm glow
+            color=(*Colors.HOLO_YELLOW, 200),
             game_size=self.game.size,
             y_ratio=0.35,
         )
+
+        # Buttons list (dynamic vertical layout)
+        self.buttons = []
 
         # Start button
         self.start_button = Button(
@@ -72,16 +70,39 @@ class Menu(BaseState):
             function=self._start_game,
             text="START",
             font=self.game.font,
-            font_color=Colors.WHITE,
-            hover_color=Colors.DISK_ORANGE,
+            font_color=Colors.CREAM,
+            hover_color=Colors.DISK_RED,
             hover_font_color=Colors.WHITE,
-            clicked_color=Colors.DISK_RED,
+            clicked_color=Colors.DARK_CRIMSON,
             clicked_font_color=Colors.WHITE,
             click_sound=pygame.Sound(
                 resource_path("assets/sound/sfx/button_click.mp3")
             ),
             size_ratio=(0.25, 0.08),
-            pos_ratio=(0.5, 0.55),
+            pos_ratio=(0.5, 0.0),
+            screen_size=self.game.size,
+            dynamic=True,
+            border_color=Colors.CREAM,
+            hover_border_color=Colors.DISK_ORANGE,
+            clicked_border_color=Colors.DARK_CRIMSON,
+            border_thickness=4,
+            press_depth=6,
+            border_radius=15,
+        )
+        self.buttons.append(self.start_button)
+
+        self.credits_button = Button(
+            color=Colors.DARK_CRIMSON,
+            function=self._show_credits,
+            text="CREDITS",
+            font=self.game.font,
+            font_color=Colors.WHITE,
+            hover_color=Colors.DISK_RED,
+            hover_font_color=Colors.WHITE,
+            clicked_color=Colors.DISK_RED,
+            clicked_font_color=Colors.WHITE,
+            size_ratio=(0.25, 0.08),
+            pos_ratio=(0.5, 0.0),
             screen_size=self.game.size,
             dynamic=True,
             border_color=Colors.DARK_ORANGE_RED,
@@ -91,6 +112,7 @@ class Menu(BaseState):
             press_depth=6,
             border_radius=15,
         )
+        self.buttons.append(self.credits_button)
 
         # Exit button
         self.exit_button = Button(
@@ -107,7 +129,7 @@ class Menu(BaseState):
                 resource_path("assets/sound/sfx/button_click.mp3")
             ),
             size_ratio=(0.25, 0.08),
-            pos_ratio=(0.5, 0.68),
+            pos_ratio=(0.5, 0.0),
             screen_size=self.game.size,
             dynamic=True,
             border_color=Colors.DARK_ORANGE_RED,
@@ -117,6 +139,7 @@ class Menu(BaseState):
             press_depth=6,
             border_radius=15,
         )
+        self.buttons.append(self.exit_button)
 
         # Pulsing effect for title
         self.pulse_timer = 0.0
@@ -125,8 +148,8 @@ class Menu(BaseState):
     def startup(self):
         pygame.display.set_caption("Space Olympics - Menu")
         self.fade_transition.startup()
-        self.start_button.startup()
-        self.exit_button.startup()
+        for btn in self.buttons:
+            btn.startup()
         self.pulse_timer = 0.0
         self._spawn_astronaut()
 
@@ -134,61 +157,68 @@ class Menu(BaseState):
         pygame.mixer.music.load(resource_path("assets/sound/music/interstellar.mp3"))
         pygame.mixer.music.play(-1, fade_ms=2000)
 
-    def cleanup(self):
-        pass
+        # Update button positions dynamically
+        self._update_button_positions()
+
+    def _update_button_positions(self):
+        """Evenly distribute buttons vertically under subtitle."""
+        w, h = self.game.size
+        top_ratio = 0.5  # start below subtitle
+        bottom_ratio = 0.75  # end before bottom
+        n = len(self.buttons)
+        if n > 1:
+            step = (bottom_ratio - top_ratio) / (n - 1)
+        else:
+            step = 0
+        for i, btn in enumerate(self.buttons):
+            btn.pos_ratio = (0.5, top_ratio + i * step)
+            btn.update(self.game.size)
 
     def _start_game(self):
-        """Start the game - go to first level."""
         logger.info("Menu: Starting game")
         self.game.sm.set_state(States.LAUNCH_TOWER)
 
+    def _show_credits(self):
+        logger.info("Menu: Showing Credits")
+        self.game.sm.set_state(States.CREDITS)
+
     def _exit_game(self):
-        """Exit the game."""
         logger.info("Menu: Exiting game")
         self.game.quit_game()
 
     def _spawn_astronaut(self):
-        """Spawn a new astronaut at random Y position."""
-        # Scale astronaut to reasonable size
         astronaut_width = int(self.game.width * 0.12)
         astronaut_aspect = (
             self.astronaut_img.get_height() / self.astronaut_img.get_width()
         )
         astronaut_height = int(astronaut_width * astronaut_aspect)
-
         self.astronaut_original = pygame.transform.scale(
             self.astronaut_img, (astronaut_width, astronaut_height)
         )
-
-        # Random Y position
         self.astronaut_y = random.randint(
             int(self.game.height * 0.1), int(self.game.height * 0.9)
         )
-
-        # Start off-screen left
         self.astronaut_x = -astronaut_width
         self.astronaut_rotation = 0.0
-
-        # Random rotation speed
         self.astronaut_rotation_speed = random.uniform(20.0, 50.0)
         if random.random() > 0.5:
-            self.astronaut_rotation_speed *= -1  # Sometimes rotate backwards
+            self.astronaut_rotation_speed *= -1
 
     def get_event(self, event: pygame.event.Event):
-        self.start_button.get_event(event)
-        self.exit_button.get_event(event)
+        for btn in self.buttons:
+            btn.get_event(event)
 
     def draw(self, screen: pygame.Surface):
-        # Draw animated GIF background
+        # Draw background GIF
         if self.bg_gif_surf:
             screen.blit(self.bg_gif_surf, (0, 0))
 
-        # Draw semi-transparent overlay for better text visibility
+        # Overlay
         overlay = pygame.Surface(self.game.size, pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 100))
         screen.blit(overlay, (0, 0))
 
-        # Draw title with pulsing effect
+        # Title pulsing
         pulse_scale = 1.0 + 0.05 * abs(
             pygame.math.Vector2(1, 0).rotate(self.pulse_timer * 360).x
         )
@@ -200,42 +230,31 @@ class Menu(BaseState):
         title_rect.centery = int(self.game.height * 0.25)
         screen.blit(title_surf, title_rect)
 
-        # Draw subtitle
+        # Subtitle
         self.subtitle.draw(screen)
 
-        # Draw buttons
-        self.start_button.draw(screen)
-        self.exit_button.draw(screen)
+        # Buttons
+        for btn in self.buttons:
+            btn.draw(screen)
 
-        # Draw floating astronaut
+        # Astronaut
         self._draw_astronaut(screen)
 
-        # Draw decorative stars
+        # Stars
         self._draw_decorative_stars(screen)
 
-        # Draw fade transition
+        # Fade
         self.fade_transition.draw(screen)
 
     def _draw_astronaut(self, screen: pygame.Surface):
-        """Draw the rotating floating astronaut."""
-        if not hasattr(self, "astronaut_original"):
-            return
-
-        # Rotate astronaut
-        rotated_astronaut = pygame.transform.rotate(
+        rotated = pygame.transform.rotate(
             self.astronaut_original, self.astronaut_rotation
         )
-        astronaut_rect = rotated_astronaut.get_rect(
-            center=(int(self.astronaut_x), int(self.astronaut_y))
-        )
-
-        screen.blit(rotated_astronaut, astronaut_rect)
+        rect = rotated.get_rect(center=(int(self.astronaut_x), int(self.astronaut_y)))
+        screen.blit(rotated, rect)
 
     def _draw_decorative_stars(self, screen: pygame.Surface):
-        """Draw some animated stars around the menu."""
         w, h = self.game.size
-
-        # Calculate star positions based on timer for animation
         star_positions = [
             (w * 0.15, h * 0.15),
             (w * 0.85, h * 0.15),
@@ -244,64 +263,49 @@ class Menu(BaseState):
             (w * 0.1, h * 0.5),
             (w * 0.9, h * 0.5),
         ]
-
         for i, (x, y) in enumerate(star_positions):
-            # Each star has slightly different timing
             star_phase = (self.pulse_timer + i * 0.2) % 1.0
             alpha = int(
                 150 + 105 * abs(pygame.math.Vector2(1, 0).rotate(star_phase * 360).x)
             )
             size = int(3 + 2 * star_phase)
-
-            # Draw star (simple 4-pointed star)
             star_color = (*Colors.WHITE, alpha)
-            star_surf = pygame.Surface((size * 6, size * 6), pygame.SRCALPHA)
-
-            # Horizontal line
+            surf = pygame.Surface((size * 6, size * 6), pygame.SRCALPHA)
             pygame.draw.line(
-                star_surf,
-                star_color,
-                (0, size * 3),
-                (size * 6, size * 3),
-                size,
+                surf, star_color, (0, size * 3), (size * 6, size * 3), size
             )
-            # Vertical line
             pygame.draw.line(
-                star_surf,
-                star_color,
-                (size * 3, 0),
-                (size * 3, size * 6),
-                size,
+                surf, star_color, (size * 3, 0), (size * 3, size * 6), size
             )
-
             screen.blit(
-                star_surf,
+                surf,
                 (int(x - size * 3), int(y - size * 3)),
                 special_flags=pygame.BLEND_ALPHA_SDL2,
             )
 
     def update(self, screen, dt):
-        # bg gif
+        # GIF update
         self.bg_frame_timer += dt
         if self.bg_frame_timer >= self.bg_frame_delay:
             self.bg_frame_timer = 0
             self.bg_frame_index = (self.bg_frame_index + 1) % len(self.bg_gif)
-        bg_frame = self.bg_gif[self.bg_frame_index]
-        self.bg_gif_surf = pygame.transform.scale(bg_frame, self.game.size)
+        self.bg_gif_surf = pygame.transform.scale(
+            self.bg_gif[self.bg_frame_index], self.game.size
+        )
 
-        # Update text layout on resize
+        # Text
         self.title.update(self.game.size)
         self.subtitle.update(self.game.size)
 
-        # Update buttons
-        self.start_button.update(self.game.size)
-        self.exit_button.update(self.game.size)
+        # Buttons
+        for btn in self.buttons:
+            btn.update(self.game.size)
 
-        # Update fade transition
+        # Fade
         self.fade_transition.set_size(self.game.size)
         self.fade_transition.update(dt)
 
-        # Update pulse timer
+        # Pulse
         self.pulse_timer += dt * self.pulse_speed
         if self.pulse_timer >= 1.0:
             self.pulse_timer -= 1.0

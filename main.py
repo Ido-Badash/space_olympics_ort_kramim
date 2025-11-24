@@ -17,11 +17,10 @@ from game.states import (
     States,
     Menu,
     SplashScreen,
-    # Credits,
     LaunchTower,
     AstroLink,
     LifeSupport,
-    SoftLanding,
+    Credits,
 )
 import logging
 from winmode import WindowStates
@@ -44,11 +43,11 @@ def main():
             game, next_state=States.MENU, text="Ort Kramim", bg_color=Colors.KHAKI_PLAT
         ),
         Menu(game),
-        # Credits(game),
         LaunchTower(game),
         AstroLink(game),
         LifeSupport(game),
         # SoftLanding(game),
+        Credits(game),
     ]
 
     # add to game all states

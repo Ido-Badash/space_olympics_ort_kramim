@@ -98,6 +98,9 @@ class Colors:
     HOLO_RED = (255, 60, 60)
     HOLO_YELLOW = (255, 230, 150)
 
+    # --- OTHER ---
+    CREAM = (255, 253, 208)
+
     # --- THEMATIC GROUPING (LISTS) ---
     hots = [
         RED,
