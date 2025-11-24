@@ -5,13 +5,12 @@ from game.core import BaseState, logger
 from game.ui import FadeTransition, Colors
 from game.widgets import Button, TextLine
 from .states import States
-from game.utils import resource_path
+from game.utils import *
 
 
 class Menu(BaseState):
     def __init__(self, game=None):
         super().__init__(States.MENU, game)
-        self.game.ss.load()
         self.fade_transition = FadeTransition(
             size=(self.game.width, self.game.height),
             starting_alpha=255,
@@ -21,18 +20,24 @@ class Menu(BaseState):
 
         # Load background GIF
         print("----------------------------------------")
-        self.game.ss.load()
-        print(self.game.ss.settings)
-        print(self.game.ss.get("menu_bg_gif_path"))
+        print(resource_path("assets/gifs/menu_bg_gif.gif"))
+        print(resource_path("assets/images/astronaut.png"))
         print("----------------------------------------")
-        self.bg_gif = gif_pygame.load(
-            resource_path(self.game.ss.get("menu_bg_gif_path"))
-        )
+        gif_path = resource_path("assets/gifs/menu_bg_gif.gif")
+
+        with open(gif_path, "rb") as f:
+            gif_bytes = f.read()
+
+        self.bg_gif = load_gif_from_bytes(gif_bytes)
+        self.bg_frame_index = 0
+        self.bg_frame_delay = 60  # ms per frame
+        self.bg_frame_timer = 0
+
         self.bg_gif_surf = None
 
         # Load astronaut image
         self.astronaut_img = pygame.image.load(
-            resource_path(self.game.ss.get("menu_astronaut_path"))
+            resource_path("assets/images/astronaut.png")
         ).convert_alpha()
 
         # Astronaut state
@@ -77,7 +82,7 @@ class Menu(BaseState):
             clicked_color=Colors.DISK_RED,
             clicked_font_color=Colors.WHITE,
             click_sound=pygame.Sound(
-                resource_path(self.game.ss.get("button_click_path"))
+                resource_path("assets/sound/sfx/button_click.mp3")
             ),
             size_ratio=(0.25, 0.08),
             pos_ratio=(0.5, 0.55),
@@ -103,7 +108,7 @@ class Menu(BaseState):
             clicked_color=Colors.DARK_CRIMSON,
             clicked_font_color=Colors.WHITE,
             click_sound=pygame.Sound(
-                resource_path(self.game.ss.get("button_click_path"))
+                resource_path("assets/sound/sfx/button_click.mp3")
             ),
             size_ratio=(0.25, 0.08),
             pos_ratio=(0.5, 0.68),
@@ -130,7 +135,7 @@ class Menu(BaseState):
         self._spawn_astronaut()
 
         # Play background music
-        pygame.mixer.music.load(resource_path(self.game.ss.get("main_music_path")))
+        pygame.mixer.music.load(resource_path("assets/sound/music/interstellar.mp3"))
         pygame.mixer.music.play(-1, fade_ms=2000)
 
     def cleanup(self):
@@ -181,7 +186,6 @@ class Menu(BaseState):
         # Draw animated GIF background
         if self.bg_gif_surf:
             screen.blit(self.bg_gif_surf, (0, 0))
-            self.bg_gif._animate()
 
         # Draw semi-transparent overlay for better text visibility
         overlay = pygame.Surface(self.game.size, pygame.SRCALPHA)
@@ -281,8 +285,12 @@ class Menu(BaseState):
             )
 
     def update(self, screen, dt):
-        # Background GIF scaled to screen
-        bg_frame, _ = self.bg_gif.get_current_frame_data()
+        # bg gif
+        self.bg_frame_timer += dt
+        if self.bg_frame_timer >= self.bg_frame_delay:
+            self.bg_frame_timer = 0
+            self.bg_frame_index = (self.bg_frame_index + 1) % len(self.bg_gif)
+        bg_frame = self.bg_gif[self.bg_frame_index]
         self.bg_gif_surf = pygame.transform.scale(bg_frame, self.game.size)
 
         # Update text layout on resize

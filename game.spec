@@ -48,7 +48,7 @@ exe = EXE(
     runtime_tmpdir=None,
 
     # Set to True if you want a console for debugging
-    console=True,  
+    console=False,  
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,

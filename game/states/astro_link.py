@@ -3,7 +3,7 @@ import gif_pygame
 import math
 from game.core import BaseState, logger
 from game.ui import FadeTransition, Colors
-from game.utils import mid_pos, resource_path
+from game.utils import *
 from game.widgets import Button, TextLine, MultiLine
 from .states import States
 
@@ -19,22 +19,27 @@ class AstroLink(BaseState):
             speed=100,
         )
 
-        self.bg_gif = gif_pygame.load(
-            resource_path(self.game.ss.get("astro_link_bg_gif_path"))
-        )
+        bg_gif_path = resource_path("assets/gifs/astro_link_bg.gif")
+        with open(bg_gif_path, "rb") as f:
+            gif_bytes = f.read()
+
+        self.bg_gif = load_gif_from_bytes(gif_bytes)
+        self.bg_frame_index = 0
+        self.bg_frame_delay = 60  # ms per frame
+        self.bg_frame_timer = 0
         self.bg_gif_surf = None
 
         # Load images
         self.spacecraft_img_original = pygame.image.load(
-            resource_path(self.game.ss.get("astro_link_spacecraft_path"))
+            resource_path("assets/images/spacecraft.png")
         ).convert_alpha()
 
         self.satellite_img = pygame.image.load(
-            resource_path(self.game.ss.get("astro_link_satellite_path"))
+            resource_path("assets/images/satellite.png")
         ).convert_alpha()
 
         self.ground_station_img = pygame.image.load(
-            resource_path(self.game.ss.get("astro_link_ground_station_path"))
+            resource_path("assets/images/ground_station.png")
         ).convert_alpha()
         self.ground_station_img.set_alpha(200)
 
@@ -88,14 +93,14 @@ class AstroLink(BaseState):
         # Load sounds
         self.game.sound_manager.load_sound(
             "beam_connect",
-            resource_path(self.game.ss.get("astro_link_beam_sound_path")),
+            resource_path("assets/sound/sfx/beam_connect.mp3"),
         )
         self.game.sound_manager.load_sound(
             "transmission_success",
-            resource_path(self.game.ss.get("astro_link_success_sound_path")),
+            resource_path("assets/sound/sfx/transmission_success.mp3"),
         )
         self.game.sound_manager.load_sound(
-            "win", resource_path(self.game.ss.get("win_path"))
+            "win", resource_path("assets/sound/sfx/win.mp3")
         )
 
         # Game state
@@ -147,7 +152,7 @@ class AstroLink(BaseState):
             clicked_color=Colors.DARK_GREEN,
             clicked_font_color=Colors.PLATINUM,
             click_sound=pygame.Sound(
-                resource_path(self.game.ss.get("button_click_path"))
+                resource_path("assets/sound/sfx/button_click.mp3")
             ),
             size_ratio=(0.15, 0.06),
             screen_size=self.game.size,
@@ -175,7 +180,7 @@ class AstroLink(BaseState):
         self._scale_images()
 
         # Play background music
-        pygame.mixer.music.load(resource_path(self.game.ss.get("main_music_path")))
+        pygame.mixer.music.load(resource_path("assets/sound/music/interstellar.mp3"))
         pygame.mixer.music.play(-1, fade_ms=1000)
 
     def cleanup(self):
@@ -281,10 +286,15 @@ class AstroLink(BaseState):
                 self._trigger_win()
 
     def update(self, screen, dt):
-        # Background
-        bg_frame, _ = self.bg_gif.get_current_frame_data()
+        # bg gif
+        self.bg_frame_timer += dt
+        if self.bg_frame_timer >= self.bg_frame_delay:
+            self.bg_frame_timer = 0
+            self.bg_frame_index = (self.bg_frame_index + 1) % len(self.bg_gif)
+        bg_frame = self.bg_gif[self.bg_frame_index]
         self.bg_gif_surf = pygame.transform.scale(bg_frame, self.game.size)
 
+        # text block
         self.text_block.update(self.game.size)
 
         # Handle Resize
@@ -351,7 +361,6 @@ class AstroLink(BaseState):
     def draw(self, screen: pygame.Surface):
         if self.bg_gif_surf:
             screen.blit(self.bg_gif_surf, (0, 0))
-            self.bg_gif._animate()
 
         if not self.level_complete:
             self.text_block.draw(screen)

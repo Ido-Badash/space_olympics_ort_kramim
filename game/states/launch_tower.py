@@ -2,7 +2,7 @@ import pygame
 import gif_pygame
 from game.core import BaseState
 from game.ui import FadeTransition, Colors
-from game.utils import mid_pos, resource_path
+from game.utils import *
 from .states import States
 from game.entities import Rocket
 from game.widgets import TextLine, MultiLine, Button
@@ -19,9 +19,15 @@ class LaunchTower(BaseState):
             ending_alpha=0,
         )
 
-        self.bg_gif = gif_pygame.load(
-            resource_path(self.game.ss.get("launch_tower_bg_gif_path"))
-        )
+        bg_gif_path = resource_path("assets/gifs/launch_tower_bg.gif")
+        with open(bg_gif_path, "rb") as f:
+            gif_bytes = f.read()
+
+        self.bg_gif = load_gif_from_bytes(gif_bytes)
+        self.bg_frame_index = 0
+        self.bg_frame_delay = 60  # ms per frame
+        self.bg_frame_timer = 0
+
         self.bg_gif_surf = None
 
         # --- MULTILINE TEXT BLOCK ---
@@ -84,16 +90,15 @@ class LaunchTower(BaseState):
 
         for r in self.rockets:
             r.dying_sound = pygame.Sound(
-                resource_path(self.game.ss.get("rocket_dying_path"))
+                resource_path("assets/sound/sfx/rocket_dying.mp3")
             )
             r.flying_sound = pygame.Sound(
-                resource_path(self.game.ss.get("rocket_flying_path"))
+                resource_path("assets/sound/sfx/rocket_flying.mp3")
             )
-            # r.falling_sound = pygame.Sound(self.game.ss.get("rocket_falling_path"))
 
         # win sound
         self.game.sound_manager.load_sound(
-            "win", resource_path(self.game.ss.get("win_path"))
+            "win", resource_path("assets/sound/sfx/win.mp3")
         )
 
         # track clicks
@@ -116,7 +121,7 @@ class LaunchTower(BaseState):
             clicked_color=Colors.DARK_GREEN,
             clicked_font_color=Colors.PLATINUM,
             click_sound=pygame.Sound(
-                resource_path(self.game.ss.get("button_click_path"))
+                resource_path("assets/sound/sfx/button_click.mp3")
             ),
             size_ratio=(0.15, 0.06),  # 15% width, 6% height of screen
             screen_size=self.game.screen.get_size(),
@@ -138,7 +143,7 @@ class LaunchTower(BaseState):
         self._played_win_sound = False
 
         # play main music
-        pygame.mixer.music.load(resource_path(self.game.ss.get("main_music_path")))
+        pygame.mixer.music.load(resource_path("assets/sound/music/interstellar.mp3"))
         pygame.mixer.music.play(-1, fade_ms=2000)
 
     def cleanup(self):
@@ -169,7 +174,6 @@ class LaunchTower(BaseState):
         # background
         if self.bg_gif_surf:
             screen.blit(self.bg_gif_surf, (shake_x, shake_y))
-            self.bg_gif._animate()
 
         # text block
         self.text_block.draw(screen)
@@ -185,8 +189,12 @@ class LaunchTower(BaseState):
         self.fade_transition.draw(screen)
 
     def update(self, screen, dt):
-        # background GIF scaled to screen
-        bg_frame, _ = self.bg_gif.get_current_frame_data()
+        # bg gif
+        self.bg_frame_timer += dt
+        if self.bg_frame_timer >= self.bg_frame_delay:
+            self.bg_frame_timer = 0
+            self.bg_frame_index = (self.bg_frame_index + 1) % len(self.bg_gif)
+        bg_frame = self.bg_gif[self.bg_frame_index]
         self.bg_gif_surf = pygame.transform.scale(bg_frame, self.game.size)
 
         # update text layout on resize

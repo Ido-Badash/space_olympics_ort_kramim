@@ -14,7 +14,7 @@ import pygame.freetype
 from .logger import logger
 from .trigger_handler import TriggerHandler
 from .sound_manager import SoundManager
-from game.utils.systems_utils import fullscreen_toggle
+from game.utils import resource_path
 
 
 class BaseGame:
@@ -52,6 +52,9 @@ class BaseGame:
             (self.ss.get("screen_w", 640), self.ss.get("screen_h", 480)),
             WindowStates.FULLSCREEN if open_in_fullscreen else self.win_state,
         )
+
+        # fps
+        self.fps = self.ss.get("fps", 60)
 
         # --- Global Inputs with flags from settings.json ---
 
@@ -106,7 +109,7 @@ class BaseGame:
         self.screenshots_folder = Path("screenshots")
 
         # font
-        self.font = pygame.freetype.Font(self.ss.get("game_font_path"))
+        self.font = pygame.freetype.Font(resource_path("assets/fonts/game_font.ttf"))
 
         # add game to every state
         for s in self.sm.states:
@@ -211,7 +214,7 @@ class BaseGame:
             if self.state:
                 self.state.startup()
             while self.running and self.state:
-                self.dt = self.clock.tick(self.ss.get("fps", 60)) / 1000.0  # seconds
+                self.dt = self.clock.tick(self.fps) / 1000.0  # seconds
 
                 # time managers
                 self.tm.update(self.dt)
