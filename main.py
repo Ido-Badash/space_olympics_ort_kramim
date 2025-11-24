@@ -48,7 +48,7 @@ def main():
         LaunchTower(game),
         AstroLink(game),
         LifeSupport(game),
-        SoftLanding(game),
+        # SoftLanding(game),
     ]
 
     # add to game all states
