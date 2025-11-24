@@ -11,7 +11,7 @@ from game.utils import resource_path
 class Menu(BaseState):
     def __init__(self, game=None):
         super().__init__(States.MENU, game)
-
+        self.game.ss.load()
         self.fade_transition = FadeTransition(
             size=(self.game.width, self.game.height),
             starting_alpha=255,
@@ -20,6 +20,11 @@ class Menu(BaseState):
         )
 
         # Load background GIF
+        print("----------------------------------------")
+        self.game.ss.load()
+        print(self.game.ss.settings)
+        print(self.game.ss.get("menu_bg_gif_path"))
+        print("----------------------------------------")
         self.bg_gif = gif_pygame.load(
             resource_path(self.game.ss.get("menu_bg_gif_path"))
         )
