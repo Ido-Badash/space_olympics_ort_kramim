@@ -193,7 +193,7 @@ class SpaceQuiz(BaseState):
         # Play ambient space music
         try:
             pygame.mixer.music.load(
-                resource_path("assets/sound/music/quiz_ambient.mp3")
+                resource_path("assets/sound/music/aria_math_c418.mp3")
             )
             pygame.mixer.music.set_volume(0.5)
             pygame.mixer.music.play(-1, fade_ms=1000)
