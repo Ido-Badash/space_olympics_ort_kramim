@@ -10,4 +10,4 @@ class States(str, Enum):
     ORBIT_CONTROL = "Orbit Control"
     LIFE_SUPPORT = "Life Support"
     ASTRO_LINK = "Astro Link"
-    SOFT_LANDING = "Soft Landing"
+    SPACE_QUIZ = "Space Quiz"

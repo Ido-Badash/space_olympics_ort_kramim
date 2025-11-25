@@ -13,6 +13,7 @@ class Button:
         text=None,
         font=None,
         font_color=pg.Color("white"),
+        font_size=None,  # NEW: Optional font size for FreeType fonts
         call_on_release=True,
         hover_color=None,
         clicked_color=None,
@@ -45,6 +46,7 @@ class Button:
         # text
         self.text = text
         self.font = font or pg.font.Font(None, 16)
+        self.font_size = font_size  # Store font size for FreeType
         self.font_color = font_color
         self.hover_font_color = hover_font_color
         self.clicked_font_color = clicked_font_color
@@ -145,19 +147,24 @@ class Button:
             return
 
         if isinstance(self.font, ft.Font):
-            surf = self.font.render(self.text, self.font_color)
+            # FreeType Font - needs size parameter
+            size = self.font_size or 28  # Use provided size or default
+
+            surf = self.font.render(self.text, self.font_color, size=size)
             self.text_surface = surf[0] if isinstance(surf, tuple) else surf
+
             self.hover_text = (
-                self.font.render(self.text, self.hover_font_color)[0]
+                self.font.render(self.text, self.hover_font_color, size=size)[0]
                 if self.hover_font_color
                 else self.text_surface
             )
             self.clicked_text = (
-                self.font.render(self.text, self.clicked_font_color)[0]
+                self.font.render(self.text, self.clicked_font_color, size=size)[0]
                 if self.clicked_font_color
                 else self.text_surface
             )
         else:
+            # Regular pygame font
             self.text_surface = self.font.render(self.text, True, self.font_color)
             self.hover_text = (
                 self.font.render(self.text, True, self.hover_font_color)

@@ -16,6 +16,7 @@ from game.core import BaseGame, logger
 from game.states import (
     States,
     Menu,
+    SpaceQuiz,
     SplashScreen,
     LaunchTower,
     AstroLink,
@@ -43,10 +44,10 @@ def main():
             game, next_state=States.MENU, text="Ort Kramim", bg_color=Colors.KHAKI_PLAT
         ),
         Menu(game),
+        SpaceQuiz(game),
         LaunchTower(game),
         AstroLink(game),
         LifeSupport(game),
-        # SoftLanding(game),
         Credits(game),
     ]
 
